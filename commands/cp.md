@@ -1,1 +1,1 @@
-Сделай коммит и пуш по своим изменениям из этого разговора. Не включай файлы, которые были изменены до начала разговора — коммить только то, что менял ты. Используй осмысленное сообщение коммита на английском.
+Commit and push only the changes you made in the current conversation. Do not include files that were modified before this conversation started — commit only what you touched. Use a meaningful commit message in English.

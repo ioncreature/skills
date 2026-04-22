@@ -1,64 +1,62 @@
 ---
 name: ss
-description: Объединённый прогон /simplify и /security-review на pending changes текущей ветки. Сначала упрощает код (reuse, quality, efficiency), затем сканирует итоговый дифф на security-проблемы. Используй перед PR-ом для двойной проверки.
+description: Two-step runner — /simplify followed by /security-review on the current branch's pending changes. Cleans the diff up first (reuse, quality, efficiency), then scans the final code for security issues. Use before a PR for a double-check.
 ---
 
 # /ss — Simplify + Security-review
 
-Короткий алиас для последовательного запуска двух встроенных skills на pending changes текущей
-ветки.
+A short alias that runs two built-in skills back-to-back on the current branch's pending changes.
 
-## Зачем
+## Why
 
-Перед отправкой PR хочется за один вызов:
+Before opening a PR you usually want, in one go:
 
-1. Почистить код (удалить дублирование, упростить, использовать существующие утилиты).
-2. Проверить, что ничего небезопасного не осталось в итоговом диффе.
+1. A code cleanup pass (drop duplication, simplify, reuse existing utilities).
+2. A check that nothing insecure survived into the final diff.
 
-Порядок важен: `security-review` должен видеть **финальное** состояние кода, а не то, что потом
-перепишется `simplify`.
+Order matters: `security-review` must see the **final** state of the code, not something that
+`simplify` will rewrite afterwards.
 
-## Как выполнять
+## How to run
 
-### Шаг 1 — Simplify
+### Step 1 — Simplify
 
-Вызови встроенный skill `simplify` (через Skill tool с `skill: "simplify"`).
+Invoke the built-in `simplify` skill (via the Skill tool with `skill: "simplify"`).
 
-- Он просмотрит изменённые файлы на reuse / quality / efficiency и внесёт правки.
-- Дождись его завершения.
-- Если `simplify` внёс изменения — зафиксируй это в итоговом summary (список файлов, суть
-  изменений).
+- It reviews the changed files for reuse / quality / efficiency and edits them in place.
+- Wait for it to finish.
+- If `simplify` made edits, capture them in the final summary (file list, what changed).
 
-### Шаг 2 — Security-review
+### Step 2 — Security-review
 
-Вызови встроенный skill `security-review` (через Skill tool с `skill: "security-review"`).
+Invoke the built-in `security-review` skill (via the Skill tool with `skill: "security-review"`).
 
-- Он просканирует **обновлённый** дифф (включая правки от simplify) на security-уязвимости.
-- Дождись его завершения.
+- It scans the **updated** diff (including simplify's edits) for security vulnerabilities.
+- Wait for it to finish.
 
-### Шаг 3 — Объединённый summary
+### Step 3 — Combined summary
 
-После завершения обоих шагов выведи единый короткий отчёт:
+Once both steps are done, emit a single short report:
 
 ```
-## /ss результат
+## /ss result
 
 ### Simplify
-- <что поправлено, список файлов>
-- <или: ничего менять не пришлось>
+- <what was fixed, file list>
+- <or: nothing to change>
 
 ### Security-review
-- <findings с severity>
-- <или: проблем не найдено>
+- <findings with severity>
+- <or: no issues found>
 
-### Итог
-<одна строка: готово к PR / нужны правки / блокирующие проблемы>
+### Verdict
+<one line: ready for PR / fixes needed / blocking issues>
 ```
 
-## Важные правила
+## Ground rules
 
-- **Не коммить** — никогда не делай `git commit`. Жди явной команды пользователя.
-- **Прогоняй последовательно**, не параллельно — security-review должен видеть код после simplify.
-- Если `simplify` падает или отказывается работать — всё равно запусти `security-review` и отметь
-  сбой simplify в summary.
-- Если на текущей ветке нет pending changes — сообщи об этом и не запускай ничего.
+- **Do not commit** — never run `git commit`. Wait for the user's explicit instruction.
+- **Run sequentially**, never in parallel — security-review must see the post-simplify code.
+- If `simplify` crashes or refuses to run, still run `security-review` and note the simplify
+  failure in the summary.
+- If the current branch has no pending changes, say so and don't run anything.
