@@ -25,6 +25,7 @@ Re-running `bootstrap.sh` is safe — it refreshes existing symlinks and skips r
 | Path | Invoke | Purpose |
 | --- | --- | --- |
 | `skills/ss` | `/ss` | Simplify + security-review two-step runner. Cleans the working tree with `simplify`, then scans the final diff with `security-review`. Use before a PR. |
+| `skills/prompt-analysis` | `/prompt-analysis` | Analyze `~/.claude/history.jsonl` — time patterns, topics, interaction style, weekly evolution, plus a subjective reflection. Chat-only output. Optional args: project name and/or time range (`last-week`, `last-month`, etc.). |
 | `commands/cp.md` | `/cp` | Commit and push only the changes you made in the current session, with an English commit message. |
 
 ## Add a new skill / command
