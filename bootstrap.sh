@@ -28,3 +28,5 @@ link_dir() {
 
 link_dir "$ROOT/skills" "$HOME/.claude/skills"
 link_dir "$ROOT/commands" "$HOME/.claude/commands"
+# files that live at the root of ~/.claude (e.g. CLAUDE.md — user-scope memory)
+link_dir "$ROOT/home" "$HOME/.claude"

@@ -1,0 +1,57 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(awk:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(wc:*)",
+      "Bash(tree:*)",
+      "Bash(file:*)",
+      "Bash(jq:*)",
+      "Bash(env)",
+      "Bash(pdftotext:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm exec:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npx vitest:*)",
+      "Bash(git:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker info:*)",
+      "Bash(lsof:*)",
+      "Bash(ps:*)",
+      "Bash(kill -0:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:docs.expo.dev)",
+      "Read(//tmp/**)",
+      "Read(//private/tmp/**)",
+      "Read(//Users/alex/.claude/**)",
+      "mcp__pencil",
+      "mcp__plugin_playwright_playwright"
+    ]
+  },
+  "enabledPlugins": {
+    "playwright@claude-plugins-official": true
+  },
+  "language": "Русский",
+  "effortLevel": "high",
+  "voice": {
+    "enabled": true,
+    "mode": "hold"
+  },
+  "autoCompactEnabled": true,
+  "agentPushNotifEnabled": true
+}

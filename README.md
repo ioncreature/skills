@@ -8,7 +8,8 @@ linked into `~/.claude/` so they're available in every project.
 ```
 skills/<name>/SKILL.md   # user-scope skill (invocable via the Skill tool / slash command)
 commands/<name>.md       # user-scope slash command
-bootstrap.sh             # creates symlinks ~/.claude/skills/<name> and ~/.claude/commands/<name>.md
+home/<file>              # files linked into the root of ~/.claude (e.g. home/CLAUDE.md → ~/.claude/CLAUDE.md)
+bootstrap.sh             # creates the symlinks under ~/.claude/{skills,commands} and ~/.claude/
 ```
 
 ## Install on a new machine
@@ -20,6 +21,10 @@ git clone git@github.com:ioncreature/skills.git ~/skills
 
 Re-running `bootstrap.sh` is safe — it refreshes existing symlinks and skips real files.
 
+> **Note:** `bootstrap.sh` never overwrites a real file — it only (re)links. If a machine already
+> has a real `~/.claude/CLAUDE.md`, merge anything worth keeping into `home/CLAUDE.md` first, then
+> remove the local file and re-run `bootstrap.sh` to replace it with the symlink.
+
 ## What's here
 
 | Path | Invoke | Purpose |
@@ -29,6 +34,8 @@ Re-running `bootstrap.sh` is safe — it refreshes existing symlinks and skips r
 | `skills/docs-sync` | `/docs-sync` | Reconcile project docs with the current code. Inspects pending changes, finds related `CLAUDE.md` / `docs/specs/*` / `README.md` files, and patches them to match reality. |
 | `skills/prompt-analysis` | `/prompt-analysis` | Analyze `~/.claude/history.jsonl` — time patterns, topics, interaction style, weekly evolution, plus a subjective reflection. Chat-only output. Optional args: project name and/or time range (`last-week`, `last-month`, etc.). |
 | `commands/cp.md` | `/cp` | Commit and push only the changes you made in the current session, with an English commit message. |
+| `home/CLAUDE.md` | — | User-scope memory: personal rules applied in every project, linked to `~/.claude/CLAUDE.md`. Versioned here so the same rules follow you across machines. |
+| `home/settings.json` | — | User-scope settings linked to `~/.claude/settings.json`: permission allowlist, language, effort level, voice, enabled plugins. Curated to safe, generic, cross-project entries (no one-off paths/PIDs). |
 
 ## Add a new skill / command
 
