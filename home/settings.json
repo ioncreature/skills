@@ -14,6 +14,7 @@
       "Bash(file:*)",
       "Bash(jq:*)",
       "Bash(env)",
+      "Bash(sort *)",
       "Bash(pdftotext:*)",
       "Bash(pnpm install:*)",
       "Bash(pnpm build:*)",
@@ -49,5 +50,6 @@
     "mode": "hold"
   },
   "autoCompactEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "skipWorkflowUsageWarning": true
 }
