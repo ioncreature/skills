@@ -30,9 +30,22 @@
       "Bash(env)",
       "Bash(uuidgen)",
       "Bash(mdls:*)",
+      "Bash(sips:*)",
       "Bash(dig:*)",
       "Bash(pdftotext:*)",
       "Bash(pdfinfo:*)",
+      "Bash(pdfseparate:*)",
+      "Bash(pdftoppm:*)",
+      "Bash(date:*)",
+      "Bash(diff:*)",
+      "Bash(gunzip:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "Bash(node:*)",
+      "Bash(tsx:*)",
+      "Bash(python3:*)",
+      "Bash(tesseract:*)",
+      "Bash(claude config:*)",
       "Bash(brew info:*)",
       "Bash(brew list:*)",
       "Bash(npm ls:*)",
@@ -46,6 +59,7 @@
       "Bash(npx eslint:*)",
       "Bash(npx tsx:*)",
       "Bash(npx vitest:*)",
+      "Bash(npx prettier:*)",
       "Bash(git:*)",
       "Bash(docker ps:*)",
       "Bash(docker info:*)",
@@ -62,13 +76,18 @@
       "Read(//opt/homebrew/Cellar/**)",
       "Read(//opt/homebrew/bin/**)",
       "Read(//usr/local/bin/**)",
+      "Read(//usr/local/lib/node_modules/@openai/codex/bin/**)",
+      "Skill(scp)",
+      "Skill(simplify)",
+      "Skill(schedule)",
+      "Skill(update-config)",
       "mcp__plugin_playwright_playwright",
       "mcp__pencil"
     ]
   },
-  "model": "claude-fable-5[1m]",
   "enabledPlugins": {
-    "playwright@claude-plugins-official": true
+    "playwright@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true
   },
   "language": "Русский",
   "effortLevel": "xhigh",
@@ -78,5 +97,8 @@
   },
   "skipWorkflowUsageWarning": true,
   "autoCompactEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "env": {
+    "DISABLE_AUTOUPDATER": "1"
+  }
 }
