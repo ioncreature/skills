@@ -1,4 +1,7 @@
 {
+  "env": {
+    "DISABLE_AUTOUPDATER": "1"
+  },
   "permissions": {
     "allow": [
       "Bash(sed:*)",
@@ -97,8 +100,5 @@
   },
   "skipWorkflowUsageWarning": true,
   "autoCompactEnabled": true,
-  "agentPushNotifEnabled": true,
-  "env": {
-    "DISABLE_AUTOUPDATER": "1"
-  }
+  "agentPushNotifEnabled": true
 }
