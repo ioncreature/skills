@@ -1,7 +1,6 @@
 {
   "env": {
-    "DISABLE_AUTOUPDATER": "1",
-    "ANTHROPIC_MODEL": "claude-fable-5"
+    "DISABLE_AUTOUPDATER": "0"
   },
   "permissions": {
     "allow": [
@@ -88,6 +87,14 @@
       "Bash(docker compose:*)",
       "Bash(ps:*)",
       "Bash(kill -0:*)",
+      "Bash(xcrun simctl list:*)",
+      "Bash(md5:*)",
+      "Bash(md5sum:*)",
+      "Bash(shasum:*)",
+      "Bash(sha1sum:*)",
+      "Bash(sha256sum:*)",
+      "Bash(cksum:*)",
+      "Bash(openssl dgst:*)",
       "WebSearch",
       "WebFetch",
       "Read(//tmp/**)",
@@ -107,12 +114,14 @@
       "mcp__pencil"
     ]
   },
+  "model": "claude-fable-5[1m]",
   "enabledPlugins": {
     "playwright@claude-plugins-official": true,
     "swift-lsp@claude-plugins-official": true
   },
   "language": "Русский",
   "effortLevel": "xhigh",
+  "tui": "fullscreen",
   "voice": {
     "enabled": true,
     "mode": "hold"
