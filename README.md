@@ -35,7 +35,7 @@ Re-running `bootstrap.sh` is safe — it refreshes existing symlinks and skips r
 | `commands/cp.md` | `/cp` | Commit and push only the changes you made in the current session, with an English commit message. |
 | `home/CLAUDE.md` | — | User-scope memory: personal rules applied in every project, linked to `~/.claude/CLAUDE.md`. Versioned here so the same rules follow you across machines. |
 | `home/settings.json` | — | User-scope settings linked to `~/.claude/settings.json`: permission allowlist, language, effort level, status line, voice, enabled plugins. Curated to safe, generic, cross-project entries (no one-off paths/PIDs). |
-| `home/statusline.sh` | — | Status line script linked to `~/.claude/statusline.sh`, wired via `statusLine` in `home/settings.json`. Shows `model · effort · context used/size % · 5h/7d plan limits · git branch` (each segment only when reported). Context and limits turn yellow at 70% and red at 90%; from 70% the 5h limit also shows its reset time. Uses `jq`, falls back to `python3`. |
+| `home/statusline.sh` | — | Status line script linked to `~/.claude/statusline.sh`, wired via `statusLine` in `home/settings.json`. Shows `model · effort · context used/size % · 5h/7d plan limits` (each segment only when reported). Context and limits turn yellow at 70% and red at 90%; from 70% the 5h limit also shows its reset time. Uses `jq`, falls back to `python3`. |
 
 ## Add a new skill / command
 

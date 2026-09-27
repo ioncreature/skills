@@ -1,5 +1,5 @@
 #!/bin/sh
-# Claude Code statusline: model, effort, context usage, plan limits (each if reported), git branch.
+# Claude Code statusline: model, effort, context usage, plan limits (each if reported).
 # Wired up via statusLine.command in home/settings.json; input is the statusline JSON on stdin.
 # Context and limits turn yellow from WARN_PCT and red from CRIT_PCT; the 5h reset time shows from WARN_PCT.
 
@@ -21,7 +21,6 @@ if command -v jq >/dev/null 2>&1; then
     | [
         (.model.display_name // "unknown" | sub(" *\\([^)]*context\\)"; "")),
         (.effort.level // ""),
-        (.workspace.current_dir // .cwd // ""),
         (if $used > 0 and $size > 0 then "\($used | k)/\($size | k)" else "" end),
         (if $used > 0 and $size > 0 then ($c.used_percentage // ($used * 100 / $size) | floor | tostring) else "" end),
         (.rate_limits.five_hour.used_percentage // "" | if . == "" then . else floor | tostring end),
@@ -41,12 +40,10 @@ k = lambda n: f"{n // 1000000}M" if n >= 1000000 else f"{n // 1000}k" if n >= 10
 r = d.get("rate_limits") or {}
 h5, d7 = r.get("five_hour") or {}, r.get("seven_day") or {}
 pct = lambda v: "" if v is None else str(int(v))
-w = d.get("workspace") or {}
 ctx_pct = c.get("used_percentage")
 print("\037".join([
     re.sub(r" *\([^)]*context\)", "", (d.get("model") or {}).get("display_name", "unknown")),
     (d.get("effort") or {}).get("level", ""),
-    w.get("current_dir") or d.get("cwd") or "",
     f"{k(used)}/{k(size)}" if used and size else "",
     pct(ctx_pct if ctx_pct is not None else used * 100 // size) if used and size else "",
     pct(h5.get("used_percentage")),
@@ -56,7 +53,7 @@ print("\037".join([
 ')
 fi
 
-IFS="$SEP" read -r model effort dir ctx ctx_pct h5_pct h5_reset d7_pct <<EOF
+IFS="$SEP" read -r model effort ctx ctx_pct h5_pct h5_reset d7_pct <<EOF
 $fields
 EOF
 
@@ -77,11 +74,6 @@ hhmm() {
   date -r "$1" +%H:%M 2>/dev/null || date -d "@$1" +%H:%M 2>/dev/null
 }
 
-branch=""
-if [ -n "$dir" ] && git --no-optional-locks -C "$dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  branch=$(git --no-optional-locks -C "$dir" branch --show-current 2>/dev/null)
-fi
-
 out="$model"
 [ -n "$effort" ] && out="$out · $effort"
 [ -n "$ctx" ] && out="$out · $(colorize "$ctx_pct" "$ctx $ctx_pct%")"
@@ -93,6 +85,5 @@ if [ -n "$h5_pct" ]; then
   out="$out · $(colorize "$h5_pct" "$h5")"
 fi
 [ -n "$d7_pct" ] && out="$out · $(colorize "$d7_pct" "7d $d7_pct%")"
-[ -n "$branch" ] && out="$out · $branch"
 
 printf '%s' "$out"
