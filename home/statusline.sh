@@ -11,47 +11,27 @@ input=$(cat)
 # One parse, fields joined by the ASCII unit separator: whitespace IFS would collapse empty fields.
 SEP=$(printf '\037')
 
-if command -v jq >/dev/null 2>&1; then
-  fields=$(printf '%s' "$input" | jq -r '
-    def k: if . >= 1000000 then "\(. / 1000000 | floor)M" elif . >= 1000 then "\(. / 1000 | floor)k" else tostring end;
-    (.context_window // {}) as $c
-    | ($c.current_usage // {}) as $u
-    | (($u.input_tokens // 0) + ($u.cache_creation_input_tokens // 0) + ($u.cache_read_input_tokens // 0)) as $used
-    | ($c.context_window_size // 0) as $size
-    | [
-        (.model.display_name // "unknown" | sub(" *\\([^)]*context\\)"; "")),
-        (.effort.level // ""),
-        (if $used > 0 and $size > 0 then "\($used | k)/\($size | k)" else "" end),
-        (if $used > 0 and $size > 0 then ($c.used_percentage // ($used * 100 / $size) | floor | tostring) else "" end),
-        (.rate_limits.five_hour.used_percentage // "" | if . == "" then . else floor | tostring end),
-        (.rate_limits.five_hour.resets_at // "" | tostring),
-        (.rate_limits.seven_day.used_percentage // "" | if . == "" then . else floor | tostring end)
-      ]
-    | join("\u001f")')
-else
-  fields=$(printf '%s' "$input" | python3 -c '
-import sys, json, re
-d = json.load(sys.stdin)
-c = d.get("context_window") or {}
-u = c.get("current_usage") or {}
-used = sum(u.get(f) or 0 for f in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens"))
-size = c.get("context_window_size") or 0
-k = lambda n: f"{n // 1000000}M" if n >= 1000000 else f"{n // 1000}k" if n >= 1000 else str(n)
-r = d.get("rate_limits") or {}
-h5, d7 = r.get("five_hour") or {}, r.get("seven_day") or {}
-pct = lambda v: "" if v is None else str(int(v))
-ctx_pct = c.get("used_percentage")
-print("\037".join([
-    re.sub(r" *\([^)]*context\)", "", (d.get("model") or {}).get("display_name", "unknown")),
-    (d.get("effort") or {}).get("level", ""),
-    f"{k(used)}/{k(size)}" if used and size else "",
-    pct(ctx_pct if ctx_pct is not None else used * 100 // size) if used and size else "",
-    pct(h5.get("used_percentage")),
-    str(h5.get("resets_at") or ""),
-    pct(d7.get("used_percentage")),
-]))
-')
+if ! command -v jq >/dev/null 2>&1; then
+  printf 'statusline: jq not found'
+  exit 0
 fi
+
+fields=$(printf '%s' "$input" | jq -r '
+  def k: if . >= 1000000 then "\(. / 1000000 | floor)M" elif . >= 1000 then "\(. / 1000 | floor)k" else tostring end;
+  (.context_window // {}) as $c
+  | ($c.current_usage // {}) as $u
+  | (($u.input_tokens // 0) + ($u.cache_creation_input_tokens // 0) + ($u.cache_read_input_tokens // 0)) as $used
+  | ($c.context_window_size // 0) as $size
+  | [
+      (.model.display_name // "unknown" | sub(" *\\([^)]*context\\)"; "")),
+      (.effort.level // ""),
+      (if $used > 0 then "\($used | k)" else "" end),
+      (if $used > 0 and $size > 0 then ($c.used_percentage // ($used * 100 / $size) | floor | tostring) else "" end),
+      (.rate_limits.five_hour.used_percentage // "" | if . == "" then . else floor | tostring end),
+      (.rate_limits.five_hour.resets_at // "" | tostring),
+      (.rate_limits.seven_day.used_percentage // "" | if . == "" then . else floor | tostring end)
+    ]
+  | join("\u001f")')
 
 IFS="$SEP" read -r model effort ctx ctx_pct h5_pct h5_reset d7_pct <<EOF
 $fields
