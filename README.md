@@ -30,12 +30,12 @@ Re-running `bootstrap.sh` is safe — it refreshes existing symlinks and skips r
 | Path | Invoke | Purpose |
 | --- | --- | --- |
 | `skills/ss` | `/ss` | Simplify + security-review two-step runner. Cleans the working tree with `simplify`, then scans the final diff with `security-review`. Use before a PR. |
-| `skills/scp` | `/scp` | Simplify + commit-push two-step runner. Cleans the working tree with `simplify`, then commits and pushes only what you touched this session via `cp`. |
-| `skills/docs-sync` | `/docs-sync` | Reconcile project docs with the current code. Inspects pending changes, finds related `CLAUDE.md` / `docs/specs/*` / `README.md` files, and patches them to match reality. |
+| `skills/scp` | `/scp` | Simplify + docs sync + commit-push runner. Cleans the working tree with `simplify`, reconciles affected `CLAUDE.md` / `docs/**` / `README.md` with the code, then commits and pushes only what you touched this session via `cp`. |
 | `skills/prompt-analysis` | `/prompt-analysis` | Analyze `~/.claude/history.jsonl` — time patterns, topics, interaction style, weekly evolution, plus a subjective reflection. Chat-only output. Optional args: project name and/or time range (`last-week`, `last-month`, etc.). |
 | `commands/cp.md` | `/cp` | Commit and push only the changes you made in the current session, with an English commit message. |
 | `home/CLAUDE.md` | — | User-scope memory: personal rules applied in every project, linked to `~/.claude/CLAUDE.md`. Versioned here so the same rules follow you across machines. |
-| `home/settings.json` | — | User-scope settings linked to `~/.claude/settings.json`: permission allowlist, language, effort level, voice, enabled plugins. Curated to safe, generic, cross-project entries (no one-off paths/PIDs). |
+| `home/settings.json` | — | User-scope settings linked to `~/.claude/settings.json`: permission allowlist, language, effort level, status line, voice, enabled plugins. Curated to safe, generic, cross-project entries (no one-off paths/PIDs). |
+| `home/statusline.sh` | — | Status line script linked to `~/.claude/statusline.sh`, wired via `statusLine` in `home/settings.json`. Shows `model · effort · dir · git branch` (effort only when the model reports it). Uses `jq`, falls back to `python3`. |
 
 ## Add a new skill / command
 
