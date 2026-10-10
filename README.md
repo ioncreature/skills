@@ -30,7 +30,7 @@ Re-running `bootstrap.sh` is safe — it refreshes existing symlinks and skips r
 | Path | Invoke | Purpose |
 | --- | --- | --- |
 | `skills/ss` | `/ss` | Simplify + security-review two-step runner. Cleans the working tree with `simplify`, then scans the final diff with `security-review`. Use before a PR. |
-| `skills/scp` | `/scp` | Simplify + docs sync + commit-push runner. Cleans the working tree with `simplify`, reconciles affected `CLAUDE.md` / `docs/**` / `README.md` with the code, then commits and pushes only what you touched this session via `cp`. |
+| `skills/scp` | `/scp` | Simplify + review + rules + docs sync + commit-push runner. Cleans the working tree with `simplify`, runs a medium-effort bug review (`/code-review` in Claude Code, `codex review` in Codex), checks the changed code against the repo's `AGENTS.md` / `CLAUDE.md` rules, reconciles affected `CLAUDE.md` / `docs/**` / `README.md` with the code, then commits and pushes only what you touched this session via `cp`. |
 | `skills/prompt-analysis` | `/prompt-analysis` | Analyze `~/.claude/history.jsonl` — time patterns, topics, interaction style, weekly evolution, plus a subjective reflection. Chat-only output. Optional args: project name and/or time range (`last-week`, `last-month`, etc.). |
 | `commands/cp.md` | `/cp` | Commit and push only the changes you made in the current session, with an English commit message. |
 | `home/CLAUDE.md` | — | User-scope memory: personal rules applied in every project, linked to `~/.claude/CLAUDE.md`. Versioned here so the same rules follow you across machines. |

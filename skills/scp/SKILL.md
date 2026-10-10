@@ -1,37 +1,70 @@
 ---
 name: scp
-description: Three-step runner — /simplify, docs sync, then /cp on the current branch's pending changes. Cleans the diff up (reuse, quality, efficiency), reconciles affected docs (CLAUDE.md, docs/*, README) with the code, then commits and pushes only what you touched in this conversation.
+description: Runner — /simplify, a medium-effort bug review (/code-review in Claude Code, `codex review` in Codex), a project-rules pass, docs sync, then /cp on the current branch's pending changes. Cleans the diff up (reuse, quality, efficiency), fixes confirmed bugs, aligns the changed code with the repo's own rules (AGENTS.md / CLAUDE.md), reconciles affected docs (CLAUDE.md, docs/*, README) with the code, then commits and pushes only what you touched in this conversation.
 ---
 
-# /scp — Simplify + Docs + Commit-Push
+# /scp — Simplify + Review + Rules + Docs + Commit-Push
 
-A short alias that runs a cleanup pass, a docs reconciliation pass and a commit-push on the current branch's pending changes.
+A short alias that runs a cleanup pass, a bug review, a project-rules pass, a docs reconciliation pass and a commit-push on the current branch's pending changes.
 
 ## Why
 
 When you're ready to ship, you usually want, in one go:
 
 1. A code cleanup pass (drop duplication, simplify, reuse existing utilities).
-2. Docs brought back in line with what the code now does.
-3. Commit and push only the files you touched in this conversation, with a meaningful English message.
+2. A bug review of the result — `simplify` doesn't look for bugs and can introduce them.
+3. The changed code checked against the repo's own rules, which the generic passes don't know.
+4. Docs brought back in line with what the code now does.
+5. Commit and push only the files you touched in this conversation, with a meaningful English message.
 
-Order matters: docs must describe the post-simplify code, and the commit must include both the cleanup and the doc edits.
+Order matters: the review must see the post-simplify code, the rules pass also covers the review fixes, docs must describe the final code, and the commit must include all of it.
+
+## Runtime compatibility
+
+- **Claude Code:** invoke skills via the Skill tool.
+- **Codex:** there is no Skill tool — open the `SKILL.md` of the skill the session lists under that name (user-level `~/.agents/skills/<name>/` or the repo's `.agents/skills/<name>/`) and follow it. Codex has no `code-review` skill; Step 2 uses Codex's built-in reviewer instead.
 
 ## Preconditions
 
-- If the current branch has no pending changes (tracked or untracked), say so and stop. Don't invoke either skill.
+- If the current branch has no pending changes (tracked or untracked), say so and stop. Don't invoke any skill.
 
 ## How to run
 
 ### Step 1 — Simplify
 
-Invoke the built-in `simplify` skill (via the Skill tool with `skill: "simplify"`).
+Invoke the `simplify` skill (`skill: "simplify"`).
 
 - It reviews the changed files for reuse / quality / efficiency and edits them in place.
 - Wait for it to finish.
 - If `simplify` made edits, note them so they show up in the final summary.
 
-### Step 2 — Docs sync
+### Step 2 — Bug review
+
+Run a medium-effort correctness review of the pending changes. It only reports; this step decides what to apply.
+
+The reviewer must not see this conversation: an author's reasoning about the change biases the review. Triage below stays here, where the intent is known.
+
+- **Claude Code:** spawn a fresh subagent (Agent tool, general-purpose — not a fork, which inherits this conversation). Its task: invoke the `code-review` skill with `args: "medium"` on the pending changes and return every finding verbatim (file, line, summary, failure scenario) without editing code. `code-review` may run as a background job: the subagent must wait for its completion notice and return the findings from it — a launch acknowledgment is not a result. Always pass the level — without it `code-review` reuses the level the user typed last. Don't pass `--fix`. Don't call `code-review` from the main thread: there it loads into this conversation instead of a separate context.
+- **Codex:** from the repo root run `codex review --uncommitted -c model_reasoning_effort='"medium"'` — the non-interactive form of Codex's `/review`, a separate Codex process with its own context. Give it up to ~10 minutes, and if the sandbox blocks it (network, writes to `~/.codex`), re-run it with escalated permissions. Findings come on stdout.
+
+Triage each finding, checking in this order:
+
+1. a false positive, or code this conversation didn't touch → skip it, note it in the summary;
+2. the fix would change intended behavior or needs a product decision → don't fix it and **stop**: skip Steps 3–5, don't commit, and go to the summary (Step 6) with these findings under "Needs decision";
+3. otherwise — a real bug in code changed in this conversation → fix it.
+
+If the review can't run (tool error, usage limit, no network), continue without it and write `not run: <reason>` in the summary. Never report an unrun review as clean.
+
+### Step 3 — Project rules
+
+Check the changed code against the rules the repo itself sets.
+
+1. **Collect the rules.** Read the root `AGENTS.md` / `CLAUDE.md` and nested ones in touched directories. Take only rules about code: comments, naming, file headers, logging, required helpers or CLIs, forbidden patterns.
+2. **Check the diff** — including Step 1–2 edits — against those rules.
+3. **Fix violations** in lines changed in this conversation. Don't fix pre-existing violations in untouched code and don't invent rules the files don't state. Where `simplify` or the review contradicts a repo rule, the repo rule wins.
+4. A rule that can't be applied without a decision → don't commit: skip Steps 4–5 and list it under "Project rules → Needs decision" in the summary.
+
+### Step 4 — Docs sync
 
 Reconcile the documentation with the code in the pending diff.
 
@@ -47,14 +80,14 @@ Reconcile the documentation with the code in the pending diff.
 
 Doc files you edit here count as touched in this conversation, so `cp` picks them up.
 
-### Step 3 — Commit and push
+### Step 5 — Commit and push
 
-Invoke the `cp` skill (via the Skill tool with `skill: "cp"`).
+Invoke the `cp` skill (`skill: "cp"`).
 
 - It commits and pushes only the files you touched in this conversation, with an English commit message.
 - Wait for it to finish.
 
-### Step 4 — Combined summary
+### Step 6 — Combined summary
 
 Once all steps are done, emit a single short report:
 
@@ -65,6 +98,17 @@ Once all steps are done, emit a single short report:
 - <what was fixed, file list>
 - <or: nothing to change>
 
+### Review (medium, code-review | codex review)
+- Fixed: <finding → fix, file>
+- Skipped: <finding — why>
+- Needs decision: <finding> (commit skipped)
+- <or: no findings / not run: <reason>>
+
+### Project rules
+- <rule → what was fixed, file>
+- Needs decision: <rule, where> (commit skipped)
+- <or: no violations / no rules files>
+
 ### Docs
 - <path>: <what was reconciled>
 - <or: already accurate>
@@ -72,12 +116,13 @@ Once all steps are done, emit a single short report:
 
 ### Commit & push
 - <commit hash + message, remote/branch>
-- <or: nothing to commit>
+- <or: nothing to commit / skipped: <reason>>
 ```
 
 ## Ground rules
 
-- **Run sequentially**, never in parallel — docs describe the post-simplify code, `cp` commits both.
+- **Run sequentially**, never in parallel — each step works on the previous step's output, `cp` commits all of it.
 - If `simplify` ran cleanly (with or without edits), proceed to Step 2.
 - **Read the code, not just the diff** during docs sync: the diff shows what moved, only the current code shows what's true.
 - If `simplify` crashed mid-edit or left the tree in a partial/unknown state, **stop**. Don't invoke `cp` — surface the failure and let the user decide. Auto-asking risks an autopilot "yes" that commits a half-rewritten tree.
+- A review finding or a project rule that needs a decision also stops the run before `cp`, for the same reason.
