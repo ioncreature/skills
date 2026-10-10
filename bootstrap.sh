@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Link everything under this repo into ~/.claude/ so Claude Code picks it up.
+# Link skills into Claude Code and Codex; commands and home files into Claude Code.
 # Safe to re-run: existing symlinks are refreshed; real files are left alone.
 
 set -euo pipefail
@@ -27,6 +27,7 @@ link_dir() {
 }
 
 link_dir "$ROOT/skills" "$HOME/.claude/skills"
+link_dir "$ROOT/skills" "$HOME/.agents/skills"
 link_dir "$ROOT/commands" "$HOME/.claude/commands"
 # files that live at the root of ~/.claude (e.g. CLAUDE.md — user-scope memory)
 link_dir "$ROOT/home" "$HOME/.claude"
