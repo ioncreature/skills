@@ -1,6 +1,6 @@
 ---
 name: scp
-description: Runner — /simplify, a medium-effort bug review (/code-review in Claude Code, `codex review` in Codex), a project-rules pass, docs sync, then /cp on the current branch's pending changes. Cleans the diff up (reuse, quality, efficiency), fixes confirmed bugs, aligns the changed code with the repo's own rules (AGENTS.md / CLAUDE.md), reconciles affected docs (CLAUDE.md, docs/*, README) with the code, then commits and pushes only what you touched in this conversation.
+description: Runner — /simplify, a bug review (a fresh-context subagent in Claude Code, `codex review` in Codex), a project-rules pass, docs sync, then /cp on the current branch's pending changes. Cleans the diff up (reuse, quality, efficiency), fixes confirmed bugs, aligns the changed code with the repo's own rules (AGENTS.md / CLAUDE.md), reconciles affected docs (CLAUDE.md, docs/*, README) with the code, then commits and pushes only what you touched in this conversation.
 ---
 
 # /scp — Simplify + Review + Rules + Docs + Commit-Push
@@ -22,7 +22,7 @@ Order matters: the review must see the post-simplify code, the rules pass also c
 ## Runtime compatibility
 
 - **Claude Code:** invoke skills via the Skill tool.
-- **Codex:** there is no Skill tool — open the `SKILL.md` of the skill the session lists under that name (user-level `~/.agents/skills/<name>/` or the repo's `.agents/skills/<name>/`) and follow it. Codex has no `code-review` skill; Step 2 uses Codex's built-in reviewer instead.
+- **Codex:** there is no Skill tool — open the `SKILL.md` of the skill the session lists under that name (user-level `~/.agents/skills/<name>/` or the repo's `.agents/skills/<name>/`) and follow it. Step 2 uses Codex's built-in reviewer instead of a subagent.
 
 ## Preconditions
 
@@ -40,11 +40,15 @@ Invoke the `simplify` skill (`skill: "simplify"`).
 
 ### Step 2 — Bug review
 
-Run a medium-effort correctness review of the pending changes. It only reports; this step decides what to apply.
+Run a correctness review of the pending changes. It only reports; this step decides what to apply.
 
 The reviewer must not see this conversation: an author's reasoning about the change biases the review. Triage below stays here, where the intent is known.
 
-- **Claude Code:** spawn a fresh subagent (Agent tool, general-purpose — not a fork, which inherits this conversation). Its task: invoke the `code-review` skill with `args: "medium"` on the pending changes and return every finding verbatim (file, line, summary, failure scenario) without editing code. `code-review` may run as a background job: the subagent must wait for its completion notice and return the findings from it — a launch acknowledgment is not a result. Always pass the level — without it `code-review` reuses the level the user typed last. Don't pass `--fix`. Don't call `code-review` from the main thread: there it loads into this conversation instead of a separate context.
+- **Claude Code:** spawn a fresh subagent (Agent tool, general-purpose — not a fork, which inherits this conversation) that does the review itself, synchronously. Don't use the `code-review` skill here: it may detach into a background job the subagent then has to wait on. Give the subagent the repo path and this task:
+  1. Read `git diff`, `git diff --cached` and `git status -s`; read untracked files whole. For every hunk read the surrounding code, its callers and callees — not just the hunk.
+  2. Look for correctness bugs only: wrong logic, edge cases (empty / null / undefined, off-by-one, boundaries), async and races, broken call contracts and changed signatures with stale callers, error handling that swallows or misroutes errors, SQL / migrations, data loss. Not style, naming, duplication or simplification — that's `simplify`'s job.
+  3. Verify each candidate before reporting it: trace a concrete input or state through the actual code to the wrong output or crash. If the trace doesn't hold up, drop it.
+  4. Return every surviving finding as a list (file, line, one-line summary, failure scenario), or "no findings". Don't edit any files.
 - **Codex:** from the repo root run `codex review --uncommitted -c model_reasoning_effort='"medium"'` — the non-interactive form of Codex's `/review`, a separate Codex process with its own context. Give it up to ~10 minutes, and if the sandbox blocks it (network, writes to `~/.codex`), re-run it with escalated permissions. Findings come on stdout.
 
 Triage each finding, checking in this order:
@@ -98,7 +102,7 @@ Once all steps are done, emit a single short report:
 - <what was fixed, file list>
 - <or: nothing to change>
 
-### Review (medium, code-review | codex review)
+### Review (subagent | codex review)
 - Fixed: <finding → fix, file>
 - Skipped: <finding — why>
 - Needs decision: <finding> (commit skipped)
