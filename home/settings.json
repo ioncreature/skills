@@ -124,16 +124,29 @@
       "Skill(schedule)",
       "Skill(update-config)",
       "mcp__plugin_playwright_playwright",
-      "mcp__pencil"
+      "mcp__pencil",
+      "Bash(textutil:*)",
+      "Bash(openssl x509:*)",
+      "Bash(kubectl -n firstpass get:*)",
+      "Bash(kubectl -n firstpass logs:*)",
+      "Skill(dataviz)",
+      "Skill(claude-api)",
+      "Skill(deep-research)",
+      "Workflow(deep-research)"
     ]
   },
-  "model": "claude-fable-5[1m]",
+  "model": "opus",
   "enabledPlugins": {
     "playwright@claude-plugins-official": true,
     "swift-lsp@claude-plugins-official": true
   },
   "language": "Русский",
   "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "xhigh"
+    }
+  },
   "tui": "fullscreen",
   "voice": {
     "enabled": true,
@@ -141,5 +154,42 @@
   },
   "skipWorkflowUsageWarning": true,
   "autoCompactEnabled": true,
-  "agentPushNotifEnabled": true
+  "agentPushNotifEnabled": true,
+  "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "Bash(git push --force*) in ioncreature/firstpass — user's CLAUDE.md explicitly requires an explicit command before amending or force-pushing",
+      "Writes to deploy/helm/firstpass/values-prod.yaml or deploy/cloudflared/external-secret.yaml — prod-facing IaC/secrets config in ioncreature/firstpass",
+      "Bash(kubectl delete:*) in namespace argocd or any *-prod namespace of cluster psy-health-prod",
+      "Bash(helm uninstall:*) / Bash(helm rollback:*) against the psy-health-prod cluster context",
+      "Bash(terraform apply:*) / Bash(terraform destroy:*) under infra/terraform/ in psy-health/platform-gitops"
+    ],
+    "environment": [
+      "### Org-wide",
+      "**Organization**: None configured",
+      "**Cloud provider(s)**: Hetzner (k3s cluster `psy-health-prod`, which also runs FirstPass prod in namespace `firstpass`); Cloudflare (R2 buckets, cloudflared tunnels); cloud Postgres `firstpass` DB (FirstPass system of record, reached from Macs through a cloudflared tunnel)",
+      "**Repository visibility**: private — `ioncreature/firstpass`, `psy-health/platform-gitops` (both verified via gh)",
+      "**Internal sharing / snippet hosting**: None configured — treat public paste/gist services as outside the trust boundary",
+      "**Secrets management**: Vault (ExternalSecret → `kv/platform/*`) for cluster `psy-health-prod`, FirstPass prod secrets included; no secrets committed to git; FirstPass CI secrets `GITHUB_TOKEN`, `GITOPS_PAT`",
+      "**Default / protected branches**: `main` is the default branch of each repo; rulesets are not queryable — treat `main` as protected out of caution",
+      "**CI/CD deploy targets**: Argo CD pull-based sync from `psy-health/platform-gitops` `main` into k3s cluster `psy-health-prod`; FirstPass images are built in CI and rolled out through gitops (`deploy/helm/firstpass`)",
+      "**Network posture**: None configured",
+      "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine with open internet",
+      "**Source control**: github.com — `ioncreature/firstpass`, `ioncreature/skills`, `psy-health/platform-gitops`; each working repo's own `origin` remote",
+      "**Trusted internal domains**: None configured",
+      "**Trusted cloud buckets**: directport-pg-backups, firstpass-pg-backups, numbergym-backups, psy-health-pg-backups, silkwaymed-pg-backup-r2 (config-derived — not confirmed upload destinations; uploads of local data still require confirmation)",
+      "**Key internal services**: Argo CD (namespace `argocd`), Vault (`VAULT_ADDR`), get.helm.sh and raw.githubusercontent.com (Helm chart / manifest fetches in platform-gitops); FirstPass driver-server (local HTTP/MCP control-plane, loopback only, port ~7731); crm.firstpass.ru (CRM)",
+      "**Internal package registry**: None configured",
+      "**Sensitive data locations & audiences**: platform-gitops `secrets/` (ExternalSecret manifests referencing Vault paths), `infra/terraform/psy-health-prod_kubeconfig.yaml`, `infra/terraform/terraform.tfvars`, `infra/terraform/.terraform/terraform.tfstate`, `infra/ru-proxy/.env.example`, `rotate-secrets.sh`, `values/*-prod.yaml` — prod infra credentials, share only with audiences cleared for prod infra access; FirstPass `data/` (client construction-documentation packs and audit artifacts), gitignored `.env*`, helm `values-prod.yaml`; on this machine `~/.zshenv` (`DATABASE_URL_CLOUD`, `R2_*`, `BOT_TOKEN`), `~/.ssh`, `~/.kube` — share only with audiences cleared at the [named+specifics] bar",
+      "**Data retention / declassification**: None configured",
+      "**Sensitive remote targets**: k3s cluster `psy-health-prod` — namespaces `argocd`, `firstpass` and any `*-prod`/`*prod*` namespace (e.g. `platform-prod`); Hetzner nodes backing it; any host/namespace with `prod`/`production` as a whole word or segment",
+      "**Protected deployment namespaces / environments**: `argocd`, `platform-prod`, `firstpass` and other `*-prod` namespaces in cluster `psy-health-prod` — platform-gitops is the GitOps source of truth for this cluster",
+      "**Protected IaC scopes**: platform-gitops `infra/terraform/*` (main.tf, variables.tf, providers.tf, outputs.tf, terraform.tfvars), IAM/RBAC/network-policy manifests under `network-policies/`, `admission/`, `secrets/cluster-secret-store.yaml`; FirstPass Helm chart `deploy/helm/firstpass` (`values-prod.yaml`) and `deploy/cloudflared/`; anything tagged `prod`/`production`",
+      "### User-specific",
+      "**Primary use of Claude Code**: software development of FirstPass (agentic pipeline for construction-documentation audit) and DevOps/GitOps for the `psy-health-prod` Kubernetes platform (Argo CD, Helm, Terraform, Vault)",
+      "**Trusted repo**: the repository the session started in and its `origin` remote — notably `~/workspace/firstpass` (`ioncreature/firstpass`, private: confidential material such as client packs and audit data is fine there, but secrets/.env content is never cleared into it by visibility alone) and `~/workspace/psy-health/platform-gitops` (`psy-health/platform-gitops`, private)",
+      "**Org-specific CLIs**: kubectl, helm, vault, terraform, cloudflared — used against the `psy-health-prod` cluster/context"
+    ]
+  },
+  "theme": "dark"
 }

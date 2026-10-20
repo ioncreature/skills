@@ -1,0 +1,24 @@
+# Codex command rules (execpolicy) — the versioned part of ~/.codex/rules/.
+# Rules decide what runs OUTSIDE the sandbox: allow (no prompt), prompt, forbidden;
+# the strictest matching rule wins. TUI approvals go to default.rules, not here.
+# Check: codex execpolicy check --pretty --rules ~/.codex/rules/user.rules -- <command>
+
+prefix_rule(
+    pattern = ["git", "push", ["--force", "-f"]],
+    decision = "forbidden",
+    justification = "Force push only on the user's direct request; the user runs it",
+    match = ["git push --force", "git push -f origin main"],
+    not_match = ["git push origin main"],
+)
+
+# pnpm with the home store: the store lives outside the workspace.
+prefix_rule(pattern = ["pnpm", "--store-dir", "/Users/alex/Library/pnpm/store/v10"], decision = "allow")
+
+# comrades
+prefix_rule(pattern = ["pnpm", "--filter", "@comrades/backend", "exec", "jest"], decision = "allow")
+prefix_rule(pattern = ["pnpm", "backend", "test"], decision = "allow")
+
+# firstpass
+prefix_rule(pattern = ["pnpm", "--silent", "fix:drawing-look"], decision = "allow")
+prefix_rule(pattern = ["pnpm", "-C", "scripts", "exec", "tsx", "--test"], decision = "allow")
+prefix_rule(pattern = ["pnpm", "--filter", "@firstpass/landing", "test:e2e"], decision = "allow")

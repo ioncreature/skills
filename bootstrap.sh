@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Link skills into Claude Code and Codex; commands and home files into Claude Code.
+# Link skills into Claude Code and Codex; commands and home files into Claude Code;
+# command rules into Codex.
 # Safe to re-run: existing symlinks are refreshed; real files are left alone.
 
 set -euo pipefail
@@ -31,3 +32,5 @@ link_dir "$ROOT/skills" "$HOME/.agents/skills"
 link_dir "$ROOT/commands" "$HOME/.claude/commands"
 # files that live at the root of ~/.claude (e.g. CLAUDE.md — user-scope memory)
 link_dir "$ROOT/home" "$HOME/.claude"
+# Codex loads every *.rules file in ~/.codex/rules; it writes its own approvals to default.rules
+link_dir "$ROOT/codex/rules" "$HOME/.codex/rules"
