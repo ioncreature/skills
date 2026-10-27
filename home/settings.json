@@ -156,6 +156,10 @@
   "autoCompactEnabled": true,
   "agentPushNotifEnabled": true,
   "autoMode": {
+    "allow": [
+      "$defaults",
+      "SSH to the psy-health-prod k3s nodes (`psy-health-prod-*`; currently 167.233.67.213, 167.233.75.0, 167.233.79.25, 167.233.104.92) through `prod-proxy4` (179.254.80.255 = vpn-fi, the only IP in the Hetzner firewall's admin_source_ips) as a jump host — `ssh -J prod-proxy4 …`, `-o ProxyJump=prod-proxy4`, or `-o ProxyCommand='ssh -W %h:%p prod-proxy4'`, also via an ssh wrapper on PATH for the runbook scripts — is a user-approved access path (2026-10-27), equivalent to being connected to vpn-fi, not a firewall bypass. Read-only inspection of the nodes and the runbook scripts `scripts/node-os-update.sh` / `scripts/k3s-upgrade-hop.sh` over this path are allowed; other mutating commands on the nodes still follow the normal rules"
+    ],
     "soft_deny": [
       "$defaults",
       "Bash(git push --force*) in ioncreature/firstpass — user's CLAUDE.md explicitly requires an explicit command before amending or force-pushing",
@@ -173,7 +177,7 @@
       "**Secrets management**: Vault (ExternalSecret → `kv/platform/*`) for cluster `psy-health-prod`, FirstPass prod secrets included; no secrets committed to git; FirstPass CI secrets `GITHUB_TOKEN`, `GITOPS_PAT`",
       "**Default / protected branches**: `main` is the default branch of each repo; rulesets are not queryable — treat `main` as protected out of caution",
       "**CI/CD deploy targets**: Argo CD pull-based sync from `psy-health/platform-gitops` `main` into k3s cluster `psy-health-prod`; FirstPass images are built in CI and rolled out through gitops (`deploy/helm/firstpass`)",
-      "**Network posture**: None configured",
+      "**Network posture**: SSH to the psy-health-prod Hetzner nodes is allowed by the Hetzner firewall only from vpn-fi 179.254.80.255 (host alias `prod-proxy4`, also a RU-proxy leg); when this Mac is not on that VPN, jumping through `prod-proxy4` is the approved route. Ubuntu hosts `prod-proxy*`, `outbound-mail`, `prod-watchdog` are reachable directly by their ssh aliases",
       "**Host containment**: None configured — assume Claude Code runs on an ordinary developer machine with open internet",
       "**Source control**: github.com — `ioncreature/firstpass`, `ioncreature/skills`, `psy-health/platform-gitops`; each working repo's own `origin` remote",
       "**Trusted internal domains**: None configured",
